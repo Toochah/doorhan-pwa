@@ -1,4 +1,7 @@
 // Конфигурация
+const BUILD_VERSION = 'v8 - ' + new Date().toISOString();
+console.log('PWA Version:', BUILD_VERSION);
+
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
 const API_KEY = 'AIzaSyAQQgNfyc66ywxeWauLFAYyCVaQS7dli1I';
 
