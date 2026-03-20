@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v16 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v17 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -82,15 +82,20 @@ async function loadEquipment() {
 // Парсинг оборудования
 function parseEquipment(rows) {
     equipment = [];
-    // Пропускаем заголовки (первые 2 строки)
-    for (let i = 2; i < rows.length; i++) {
+    console.log(`Всего строк: ${rows.length}`);
+    
+    // Пропускаем заголовок (первая строка)
+    for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row[0] && !row[1]) continue;
-        if (row[0] && row[0].includes('Журнал')) continue;
-        
+        if (row[0] && typeof row[0] === 'string' && row[0].includes('Журнал')) continue;
+        if (row[0] && typeof row[0] === 'string' && row[0].includes('ID')) continue;
+
         const id = row[0];
         if (!id) continue;
         
+        console.log(`Row ${i}: ID=${id}, Type="${row[5] || '-'}", Loc="${row[2] || '-'}"`);
+
         equipment.push({
             id: id,
             serial: row[1] || 'Нет',
@@ -102,6 +107,7 @@ function parseEquipment(rows) {
             note: row[7] || ''
         });
     }
+    console.log(`Загружено ${equipment.length} записей`);
 }
 
 // Загрузка осмотров

@@ -642,10 +642,37 @@ header h1 {
     transition: background 0.3s;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    min-width: 200px;
+    display: block;
+    width: 100%;
 }
 
 .btn-save:active {
     background: #43a047;
+    transform: scale(0.98);
+}
+
+/* Кнопка отправки формы */
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 16px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s, background 0.3s;
+    min-width: 200px;
+    touch-action: manipulation;
+}
+
+.submit-btn:hover {
+    transform: scale(1.02);
+}
+
+.submit-btn:active {
     transform: scale(0.98);
 }
 
