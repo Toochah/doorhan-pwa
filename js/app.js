@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v12 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v13 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -350,14 +350,18 @@ window.openModal = function(equipmentId) {
     });
     document.getElementById('gate-status').value = '';
     document.getElementById('platform-status').value = '';
-    
+
     // По умолчанию выбираем Ворота и Платформу (если есть)
-    document.getElementById('inspect-gate').checked = true;
-    document.getElementById('inspect-platform').checked = true;
-    
-    // Показываем/скрываем секции
-    document.getElementById('gateSection').style.display = 'block';
-    document.getElementById('platformSection').style.display = 'block';
+    const gateCheckbox = document.getElementById('inspect-gate');
+    const platformCheckbox = document.getElementById('inspect-platform');
+    if (gateCheckbox) gateCheckbox.checked = true;
+    if (platformCheckbox) platformCheckbox.checked = true;
+
+    // Показываем/скрываем секции (если существуют)
+    const gateSection = document.getElementById('gateSection');
+    const platformSection = document.getElementById('platformSection');
+    if (gateSection) gateSection.style.display = 'block';
+    if (platformSection) platformSection.style.display = 'block';
 
     document.getElementById('modal').classList.add('active');
 }
