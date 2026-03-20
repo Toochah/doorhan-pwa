@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v11 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v12 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -267,8 +267,13 @@ function renderEquipment(filter = 'all') {
                     </div>
                     ` : ''}
                 </div>
-                <button class="btn-inspect" onclick="openModal('${eq.id}')">✏️ Пройти осмотр</button>
+                <button class="btn-inspect">✏️ Пройти осмотр</button>
             `;
+            
+            // Добавляем обработчик клика
+            const btn = card.querySelector('.btn-inspect');
+            btn.addEventListener('click', () => openModal(eq.id));
+            
             list.appendChild(card);
         });
 
