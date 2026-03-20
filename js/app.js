@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v8 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v10 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -186,7 +186,10 @@ function renderEquipment(filter = 'all') {
         filtered = equipment.filter(eq => eq.location && eq.location.includes(filter));
     }
 
-    document.getElementById('total-count').textContent = filtered.length;
+    // Общее количество
+    const totalCount = filtered.length;
+    document.getElementById('total-count').textContent = totalCount;
+    console.log(`Рендер: ${totalCount} записей (фильтр: ${filter})`);
 
     // Группировка по локациям
     const grouped = {};
@@ -196,14 +199,16 @@ function renderEquipment(filter = 'all') {
         grouped[loc].push(eq);
     });
 
+    console.log(`Группировка: ${Object.keys(grouped).length} локаций`, Object.keys(grouped));
+
     // Рендер по локациям
     Object.keys(grouped).sort().forEach(location => {
         const items = grouped[location];
-        
+
         const section = document.createElement('section');
         section.className = 'location-block';
         section.dataset.location = location;
-        
+
         // Заголовок локации
         const title = document.createElement('h2');
         title.className = 'location-title';
@@ -211,27 +216,28 @@ function renderEquipment(filter = 'all') {
         title.innerHTML = `
             📍 ${location}
             <span class="count">${items.length} ед.</span>
-            <span class="arrow">▼</span>
+            <span class="arrow">▶</span>
         `;
         section.appendChild(title);
-        
-        // Список оборудования
+
+        // Список оборудования - скрыт по умолчанию
         const list = document.createElement('div');
         list.className = 'equipment-list';
-        
+        list.style.display = 'none'; // Скрыто по умолчанию
+
         items.forEach(eq => {
             const inspection = inspections[eq.id];
             const statusClass = inspection?.status || 'none';
             const statusText = {
                 'ok': 'Исправно',
-                'warning': 'Требует внимания', 
+                'warning': 'Требует внимания',
                 'critical': 'Неисправно'
             }[statusClass] || 'Не осмотрено';
-            
+
             const card = document.createElement('div');
             card.className = 'equipment-card';
             card.dataset.id = eq.id;
-            
+
             card.innerHTML = `
                 <div class="card-header">
                     <span class="eq-number">№${eq.id}</span>
@@ -257,7 +263,7 @@ function renderEquipment(filter = 'all') {
             `;
             list.appendChild(card);
         });
-        
+
         section.appendChild(list);
         container.appendChild(section);
     });
@@ -367,34 +373,36 @@ async function submitInspection() {
     const inspectPlatform = document.getElementById('inspect-platform').checked;
     const gateStatus = document.getElementById('gate-status').value;
     const platformStatus = document.getElementById('platform-status').value;
-    
+
+    console.log('Отправка осмотра:', { eqId, inspector, inspectGate, inspectPlatform, gateStatus, platformStatus });
+
     if (!inspector) {
         showResult('Выберите инспектора', 'error');
         return;
     }
-    
+
     if (!inspectGate && !inspectPlatform) {
         showResult('Выберите хотя бы одно оборудование', 'error');
         return;
     }
-    
+
     if (inspectGate && !gateStatus) {
         showResult('Выберите статус ворот', 'error');
         return;
     }
-    
+
     if (inspectPlatform && !platformStatus) {
         showResult('Выберите статус платформы', 'error');
         return;
     }
-    
+
     // Определяем основной статус
     const mainStatus = gateStatus || platformStatus;
-    
+
     // Формируем данные
     const now = new Date();
     const dateTime = now.toLocaleString('ru-RU');
-    
+
     const inspectionData = {
         datetime: dateTime,
         equipment_id: eqId,
@@ -404,11 +412,12 @@ async function submitInspection() {
         platform_status: platformStatus,
         status: mainStatus
     };
-    
+
     try {
         // Отправляем в Google Sheets через Apps Script
+        console.log('Отправка в Google Sheets:', inspectionData);
         await sendToGoogleSheets(inspectionData);
-        
+
         // Обновляем локальные данные
         inspections[eqId] = {
             last_date: dateTime,
@@ -416,18 +425,21 @@ async function submitInspection() {
             comment: comment,
             inspector: inspector
         };
-        
+
         showResult('Осмотр успешно сохранён!', 'success');
-        
+
         // Обновляем UI
-        renderEquipment(document.querySelector('.filter-btn.active').dataset.filter);
-        updateStats();
-        
+        const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+        renderEquipment(activeFilter);
+        updateStats(activeFilter);
+
         // Закрываем модалку через 2 секунды
         setTimeout(() => {
             document.getElementById('modal').classList.remove('active');
+            document.getElementById('inspection-form').reset();
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
         }, 2000);
-        
+
     } catch (error) {
         console.error('Ошибка отправки:', error);
         showResult('Ошибка при сохранении: ' + error.message, 'error');
