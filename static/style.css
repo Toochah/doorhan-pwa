@@ -548,6 +548,9 @@ header h1 {
     font-weight: 500;
     transition: all 0.3s;
     text-align: left;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
 }
 
 .status-btn:hover {
@@ -557,6 +560,59 @@ header h1 {
 .status-btn.selected {
     border-color: currentColor;
     box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
+}
+
+/* Чекбоксы оборудования */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 200px;
+    font-size: 1rem;
+}
+
+.checkbox-label:hover {
+    background: #f5f5f5;
+    border-color: #1e3c72;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .check-mark {
+    display: inline-block;
+}
+
+.check-mark {
+    display: none;
+    color: #1e3c72;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.check-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.check-icon {
+    font-size: 1.2rem;
 }
 
 .status-ok { background: #e8f5e9; color: #2e7d32; }

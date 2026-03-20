@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Осмотр оборудования Doorhan</title>
-    <link rel="stylesheet" href="static/style.css?v=11">
+    <link rel="stylesheet" href="static/style.css?v=16">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3c72">
     <meta name="mobile-web-app-capable" content="yes">
@@ -77,10 +77,20 @@
                     <label>Оборудование:</label>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="inspect-gate"> 🚪 Ворота
+                            <input type="checkbox" id="inspect-gate">
+                            <span class="check-mark">✓</span>
+                            <span class="check-text">
+                                <span class="check-icon">🚪</span>
+                                <span class="check-label">Ворота</span>
+                            </span>
                         </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="inspect-platform"> ⚙️ Платформа
+                        <label class="checkbox-label" id="platform-label" style="display: none;">
+                            <input type="checkbox" id="inspect-platform">
+                            <span class="check-mark">✓</span>
+                            <span class="check-text">
+                                <span class="check-icon">⚙️</span>
+                                <span class="check-label">Платформа</span>
+                            </span>
                         </label>
                     </div>
                 </div>

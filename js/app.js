@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v15 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v16 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -210,7 +210,15 @@ function renderEquipment(filter = 'all') {
         
         // Определяем тип по названию
         const typeLower = (eq.type || '').toLowerCase();
-        if (typeLower.includes('платформ') || typeLower.includes('уравнит') || typeLower.includes('погруз')) {
+        const isPlatform = typeLower.includes('платформ') || 
+                          typeLower.includes('уравнит') || 
+                          typeLower.includes('погруз') ||
+                          typeLower.includes('платф') ||
+                          typeLower.includes('dock');
+        
+        console.log(`ID ${eq.id}: type="${eq.type}", isPlatform=${isPlatform}`);
+        
+        if (isPlatform) {
             grouped[loc][eq.id].platform = eq;
         } else {
             grouped[loc][eq.id].gate = eq;
@@ -421,13 +429,17 @@ window.openModal = function(equipmentId, item) {
     // По умолчанию выбираем Ворота и Платформу (если есть)
     const gateCheckbox = document.getElementById('inspect-gate');
     const platformCheckbox = document.getElementById('inspect-platform');
+    const platformLabel = document.getElementById('platform-label');
+    
     if (gateCheckbox) {
         gateCheckbox.checked = !!item.gate;
-        gateCheckbox.parentElement.style.display = item.gate ? 'block' : 'none';
+        gateCheckbox.closest('.checkbox-label').style.display = item.gate ? 'flex' : 'none';
     }
     if (platformCheckbox) {
         platformCheckbox.checked = !!item.platform;
-        platformCheckbox.parentElement.style.display = item.platform ? 'block' : 'none';
+        if (platformLabel) {
+            platformLabel.style.display = item.platform ? 'flex' : 'none';
+        }
     }
 
     // Показываем/скрываем секции (если существуют)
