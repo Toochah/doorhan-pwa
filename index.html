@@ -88,9 +88,9 @@
                 <div class="form-group">
                     <label>Статус ворот:</label>
                     <div class="status-buttons">
-                        <button type="button" class="status-btn" data-status="ok">✅ Исправно</button>
-                        <button type="button" class="status-btn" data-status="warning">⚠️ Требует внимания</button>
-                        <button type="button" class="status-btn" data-status="critical">❌ Неисправно</button>
+                        <button type="button" class="status-btn" data-target="gate" data-status="ok">✅ Исправно</button>
+                        <button type="button" class="status-btn" data-target="gate" data-status="warning">⚠️ Требует внимания</button>
+                        <button type="button" class="status-btn" data-target="gate" data-status="critical">❌ Неисправно</button>
                     </div>
                     <input type="hidden" id="gate-status">
                 </div>
@@ -98,9 +98,9 @@
                 <div class="form-group">
                     <label>Статус платформы:</label>
                     <div class="status-buttons">
-                        <button type="button" class="status-btn" data-status="ok">✅ Исправно</button>
-                        <button type="button" class="status-btn" data-status="warning">⚠️ Требует внимания</button>
-                        <button type="button" class="status-btn" data-status="critical">❌ Неисправно</button>
+                        <button type="button" class="status-btn" data-target="platform" data-status="ok">✅ Исправно</button>
+                        <button type="button" class="status-btn" data-target="platform" data-status="warning">⚠️ Требует внимания</button>
+                        <button type="button" class="status-btn" data-target="platform" data-status="critical">❌ Неисправно</button>
                     </div>
                     <input type="hidden" id="platform-status">
                 </div>
@@ -116,6 +116,6 @@
         </div>
     </div>
 
-    <script src="js/app.js?v=13"></script>
+    <script src="js/app.js?v=14"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v13 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v14 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -372,14 +372,22 @@ function setupForm() {
     document.querySelectorAll('.status-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const parent = this.parentElement;
-            const input = parent.querySelector('input[type="hidden"]');
+            // Находим input по data-атрибуту
+            const target = this.dataset.target;
+            const input = document.getElementById(`${target}-status`);
             
+            console.log(`Выбран статус: ${target} = ${this.dataset.status}`);
+
             parent.querySelectorAll('.status-btn').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
-            input.value = this.dataset.status;
+            
+            if (input) {
+                input.value = this.dataset.status;
+                console.log(`Установлено значение: ${input.id} = ${input.value}`);
+            }
         });
     });
-    
+
     // Отправка формы
     document.getElementById('inspection-form').addEventListener('submit', async (e) => {
         e.preventDefault();
