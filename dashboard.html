@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд - Doorhan</title>
+    <link rel="stylesheet" href="static/style.css?v=1">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .chart-card h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            padding-top: 20px;
+        }
+        .bar {
+            width: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: height 0.5s;
+        }
+        .bar span {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        .recent-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .recent-table th,
+        .recent-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .recent-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-ok { background: #d1fae5; color: #065f46; }
+        .status-warning { background: #fef3c7; color: #92400e; }
+        .status-critical { background: #fee2e2; color: #991b1b; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="back-link">← Назад</a>
+            <h1>📊 Дашборд осмотров</h1>
+            <div class="stats">
+                <span id="current-date"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Общая статистика -->
+        <div class="stats-cards">
+            <div class="stat-card stat-ok">
+                <span class="stat-number" id="total-equipment">0</span>
+                <span class="stat-label">📋 Всего оборудования</span>
+            </div>
+            <div class="stat-card stat-ok">
+                <span class="stat-number" id="total-inspected">0</span>
+                <span class="stat-label">✅ Осмотрено</span>
+            </div>
+            <div class="stat-card stat-warning">
+                <span class="stat-number" id="count-warning">0</span>
+                <span class="stat-label">⚠️ Требует внимания</span>
+            </div>
+            <div class="stat-card stat-critical">
+                <span class="stat-number" id="count-critical">0</span>
+                <span class="stat-label">❌ Неисправно</span>
+            </div>
+        </div>
+
+        <!-- Графики -->
+        <div class="dashboard-grid">
+            <!-- Статус оборудования -->
+            <div class="chart-card">
+                <h3>Статус оборудования</h3>
+                <div class="chart-container">
+                    <div class="bar-chart" id="status-chart">
+                        <!-- Бары добавятся JS -->
+                    </div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>Исправно</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>Внимание</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>Неисправно</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Осмотры по локациям -->
+            <div class="chart-card">
+                <h3>Осмотры по локациям</h3>
+                <div class="chart-container">
+                    <div class="bar-chart" id="location-chart">
+                        <!-- Бары добавятся JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние осмотры -->
+            <div class="chart-card" style="grid-column: 1 / -1;">
+                <h3>Последние осмотры</h3>
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>ID</th>
+                            <th>Место</th>
+                            <th>Статус</th>
+                            <th>Инспектор</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-body">
+                        <!-- Строки добавятся JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
+        const API_KEY = 'AIzaSyAQQgNfyc66ywxeWauLFAYyCVaQS7dli1I';
+
+        let equipment = [];
+        let inspections = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate();
+            loadData();
+        });
+
+        function updateDate() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = 
+                now.toLocaleDateString('ru-RU', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+        }
+
+        async function loadData() {
+            await loadEquipment();
+            await loadInspections();
+            updateDashboard();
+        }
+
+        async function loadEquipment() {
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Оборудование?key=${API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.values) {
+                    for (let i = 2; i < data.values.length; i++) {
+                        const row = data.values[i];
+                        if (!row[0]) continue;
+                        equipment.push({
+                            id: row[0],
+                            location: row[2] || '',
+                            type: row[5] || ''
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки оборудования:', error);
+            }
+        }
+
+        async function loadInspections() {
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Осмотры?key=${API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.values) {
+                    for (let i = 1; i < data.values.length; i++) {
+                        const row = data.values[i];
+                        inspections.push({
+                            datetime: row[0],
+                            equipment_id: row[1],
+                            location: row[2],
+                            status: row[5],
+                            inspector: row[6]
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки осмотров:', error);
+            }
+        }
+
+        function updateDashboard() {
+            // Статистика
+            document.getElementById('total-equipment').textContent = equipment.length;
+            
+            const uniqueInspected = new Set(inspections.map(i => i.equipment_id));
+            document.getElementById('total-inspected').textContent = uniqueInspected.size;
+            
+            let warning = 0, critical = 0;
+            const locationStats = {};
+            
+            inspections.forEach(insp => {
+                if (insp.status && insp.status.includes('внимания')) warning++;
+                if (insp.status && insp.status.includes('Неисправно')) critical++;
+                
+                const loc = insp.location || 'Другое';
+                if (!locationStats[loc]) locationStats[loc] = 0;
+                locationStats[loc]++;
+            });
+            
+            document.getElementById('count-warning').textContent = warning;
+            document.getElementById('count-critical').textContent = critical;
+            
+            // График статусов
+            const okCount = uniqueInspected.size - warning - critical;
+            renderBarChart('status-chart', [
+                { label: 'Исправно', value: okCount, color: '#10b981' },
+                { label: 'Внимание', value: warning, color: '#f59e0b' },
+                { label: 'Неисправно', value: critical, color: '#ef4444' }
+            ]);
+            
+            // График по локациям
+            const locationData = Object.entries(locationStats).map(([label, value]) => ({
+                label: label.length > 10 ? label.substring(0, 10) + '...' : label,
+                value: value,
+                color: '#667eea'
+            }));
+            renderBarChart('location-chart', locationData);
+            
+            // Последние осмотры
+            const recent = inspections.slice(-10).reverse();
+            const tbody = document.getElementById('recent-body');
+            recent.forEach(insp => {
+                const row = document.createElement('tr');
+                const statusClass = getStatusClass(insp.status);
+                row.innerHTML = `
+                    <td>${formatDate(insp.datetime)}</td>
+                    <td>№${insp.equipment_id}</td>
+                    <td>${insp.location}</td>
+                    <td><span class="status-badge ${statusClass}">${insp.status || '-'}</span></td>
+                    <td>${insp.inspector}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderBarChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const maxValue = Math.max(...data.map(d => d.value), 1);
+            
+            data.forEach(item => {
+                const height = (item.value / maxValue) * 160;
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = height + 'px';
+                bar.style.background = item.color;
+                bar.innerHTML = `
+                    <span class="bar-value">${item.value}</span>
+                    <span>${item.label}</span>
+                `;
+                container.appendChild(bar);
+            });
+        }
+
+        function getStatusClass(status) {
+            if (!status) return '';
+            if (status.includes('Исправно')) return 'status-ok';
+            if (status.includes('внимания')) return 'status-warning';
+            if (status.includes('Неисправно')) return 'status-critical';
+            return '';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const [date, time] = dateStr.split(' ');
+                const [d, m, y] = date.split('.');
+                return `${d}.${m}`;
+            } catch {
+                return dateStr;
+            }
+        }
+    </script>
+</body>
+</html>

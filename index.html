@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Осмотр оборудования Doorhan</title>
+    <link rel="stylesheet" href="static/style.css?v=1">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3c72">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔧 Система обхода и осмотра оборудования</h1>
+            <div class="stats">
+                <span>Всего: <strong id="total-count">0</strong></span>
+                <span id="current-date"></span>
+                <a href="#" class="btn-export" id="download-btn">📥 Excel</a>
+                <a href="dashboard.html" class="btn-export" style="margin-left: 5px;">📊 Дашборд</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Фильтры -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="Склад">Склады</button>
+            <button class="filter-btn" data-filter="КПП">КПП</button>
+            <button class="filter-btn" data-filter="ПОЛ">ПОЛ</button>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-cards">
+            <div class="stat-card stat-ok">
+                <span class="stat-number" id="count-ok">0</span>
+                <span class="stat-label">✅ Исправно</span>
+            </div>
+            <div class="stat-card stat-warning">
+                <span class="stat-number" id="count-warning">0</span>
+                <span class="stat-label">⚠️ Внимание</span>
+            </div>
+            <div class="stat-card stat-critical">
+                <span class="stat-number" id="count-critical">0</span>
+                <span class="stat-label">❌ Неисправно</span>
+            </div>
+            <div class="stat-card stat-none">
+                <span class="stat-number" id="count-none">0</span>
+                <span class="stat-label">📋 Не осмотрено</span>
+            </div>
+        </div>
+
+        <!-- Оборудование -->
+        <div id="equipment-list" class="equipment-list"></div>
+    </main>
+
+    <!-- Модальное окно -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Осмотр оборудования</h2>
+            <form id="inspection-form">
+                <input type="hidden" id="equipment-id">
+                
+                <div class="form-group">
+                    <label for="inspector">Инспектор:</label>
+                    <select id="inspector" required>
+                        <option value="">Выберите инспектора</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Оборудование:</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="inspect-gate"> Ворота
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="inspect-platform"> Платформа
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Статус ворот:</label>
+                    <div class="status-buttons">
+                        <button type="button" class="status-btn" data-status="ok">✅ Исправно</button>
+                        <button type="button" class="status-btn" data-status="warning">⚠️ Требует внимания</button>
+                        <button type="button" class="status-btn" data-status="critical">❌ Неисправно</button>
+                    </div>
+                    <input type="hidden" id="gate-status">
+                </div>
+
+                <div class="form-group">
+                    <label>Статус платформы:</label>
+                    <div class="status-buttons">
+                        <button type="button" class="status-btn" data-status="ok">✅ Исправно</button>
+                        <button type="button" class="status-btn" data-status="warning">⚠️ Требует внимания</button>
+                        <button type="button" class="status-btn" data-status="critical">❌ Неисправно</button>
+                    </div>
+                    <input type="hidden" id="platform-status">
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Комментарий:</label>
+                    <textarea id="comment" rows="3" placeholder="Дополнительная информация"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">💾 Сохранить и отправить</button>
+            </form>
+            <div id="form-result"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=1"></script>
+</body>
+</html>
