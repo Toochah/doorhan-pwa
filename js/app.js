@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v14 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v15 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -186,32 +186,75 @@ function renderEquipment(filter = 'all') {
         filtered = equipment.filter(eq => eq.location && eq.location.includes(filter));
     }
 
-    // Общее количество
-    const totalCount = filtered.length;
-    document.getElementById('total-count').textContent = totalCount;
-    console.log(`Рендер: ${totalCount} записей (фильтр: ${filter})`);
+    // Группировка по локациям и ID (ворота + платформа = 1 ед.)
+    const grouped = {};
+    const uniqueEquipment = {}; // Для подсчёта уникального оборудования
     
-    // Детальная статистика по локациям
-    const locationStats = {};
     filtered.forEach(eq => {
         const loc = eq.location || 'Другое';
-        locationStats[loc] = (locationStats[loc] || 0) + 1;
+        if (!grouped[loc]) grouped[loc] = {};
+        
+        // Группируем по ID - ворота и платформы с одинаковым ID = 1 ед.
+        if (!uniqueEquipment[loc]) uniqueEquipment[loc] = {};
+        uniqueEquipment[loc][eq.id] = true;
+        
+        if (!grouped[loc][eq.id]) {
+            grouped[loc][eq.id] = {
+                id: eq.id,
+                location: loc,
+                gate: null,
+                platform: null,
+                inspection: inspections[eq.id]
+            };
+        }
+        
+        // Определяем тип по названию
+        const typeLower = (eq.type || '').toLowerCase();
+        if (typeLower.includes('платформ') || typeLower.includes('уравнит') || typeLower.includes('погруз')) {
+            grouped[loc][eq.id].platform = eq;
+        } else {
+            grouped[loc][eq.id].gate = eq;
+        }
     });
+
+    // Подсчёт уникального оборудования
+    const locationStats = {};
+    let totalCount = 0;
+    Object.keys(grouped).forEach(loc => {
+        const count = Object.keys(grouped[loc]).length;
+        locationStats[loc] = count;
+        totalCount += count;
+    });
+    
+    document.getElementById('total-count').textContent = totalCount;
+    console.log(`Рендер: ${totalCount} ед. (фильтр: ${filter})`);
     console.log('Статистика по локациям:', locationStats);
 
-    // Группировка по локациям
-    const grouped = {};
-    filtered.forEach(eq => {
-        const loc = eq.location || 'Другое';
-        if (!grouped[loc]) grouped[loc] = [];
-        grouped[loc].push(eq);
+    // Сортировка: Склад №1, Склад №2, Склад №3 первыми, потом остальные
+    const priorityOrder = ['Склад №1', 'Склад №2', 'Склад №3', 'ПОТ', 'КПП №1', 'КПП №2'];
+    const allLocations = Object.keys(grouped);
+    
+    const sortedLocations = allLocations.sort((a, b) => {
+        const aIndex = priorityOrder.findIndex(p => a.includes(p) || a === p);
+        const bIndex = priorityOrder.findIndex(p => b.includes(p) || b === p);
+        
+        // Если оба в приоритетном списке
+        if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+        }
+        // Если только один в списке
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        // Оба не в списке - сортируем по алфавиту
+        return a.localeCompare(b);
     });
 
-    console.log(`Группировка: ${Object.keys(grouped).length} локаций`, Object.keys(grouped));
+    console.log(`Группировка: ${sortedLocations.length} локаций`, sortedLocations);
 
     // Рендер по локациям
-    Object.keys(grouped).sort().forEach(location => {
-        const items = grouped[location];
+    sortedLocations.forEach(location => {
+        const itemsById = grouped[location];
+        const items = Object.values(itemsById);
 
         const section = document.createElement('section');
         section.className = 'location-block';
@@ -233,8 +276,8 @@ function renderEquipment(filter = 'all') {
         list.className = 'equipment-list';
         list.style.display = 'none'; // Скрыто по умолчанию
 
-        items.forEach(eq => {
-            const inspection = inspections[eq.id];
+        items.forEach(item => {
+            const inspection = item.inspection;
             const statusClass = inspection?.status || 'none';
             const statusText = {
                 'ok': 'Исправно',
@@ -242,24 +285,42 @@ function renderEquipment(filter = 'all') {
                 'critical': 'Неисправно'
             }[statusClass] || 'Не осмотрено';
 
+            // Формируем описание оборудования
+            let equipmentDesc = '';
+            if (item.gate && item.platform) {
+                equipmentDesc = `🚪 Ворота + ⚙️ Платформа`;
+            } else if (item.gate) {
+                equipmentDesc = `🚪 Ворота`;
+            } else if (item.platform) {
+                equipmentDesc = `⚙️ Платформа`;
+            }
+
             const card = document.createElement('div');
             card.className = 'equipment-card';
-            card.dataset.id = eq.id;
+            card.dataset.id = item.id;
 
             card.innerHTML = `
                 <div class="card-header">
-                    <span class="eq-number">№${eq.id}</span>
+                    <span class="eq-number">№${item.id}</span>
                     <span class="eq-status status-${statusClass}">${statusText}</span>
                 </div>
                 <div class="card-body">
                     <div class="info-row">
-                        <span class="label">Тип:</span>
-                        <span class="value">${eq.type || '-'}</span>
+                        <span class="label">Оборудование:</span>
+                        <span class="value">${equipmentDesc}</span>
                     </div>
+                    ${item.gate ? `
                     <div class="info-row">
-                        <span class="label">Серийный №:</span>
-                        <span class="value">${eq.serial || '-'}</span>
+                        <span class="label">Ворота:</span>
+                        <span class="value">${item.gate.type || '-'} | ${item.gate.serial || '-'}</span>
                     </div>
+                    ` : ''}
+                    ${item.platform ? `
+                    <div class="info-row">
+                        <span class="label">Платформа:</span>
+                        <span class="value">${item.platform.type || '-'} | ${item.platform.serial || '-'}</span>
+                    </div>
+                    ` : ''}
                     ${inspection ? `
                     <div class="info-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
                         <span class="label" style="color: #666;">Последний осмотр:</span>
@@ -272,7 +333,7 @@ function renderEquipment(filter = 'all') {
             
             // Добавляем обработчик клика
             const btn = card.querySelector('.btn-inspect');
-            btn.addEventListener('click', () => openModal(eq.id));
+            btn.addEventListener('click', () => openModal(item.id, item));
             
             list.appendChild(card);
         });
@@ -334,12 +395,18 @@ function setupModal() {
 }
 
 // Открытие модального окна
-window.openModal = function(equipmentId) {
-    const eq = equipment.find(e => e.id == equipmentId);
+window.openModal = function(equipmentId, item) {
+    if (!item) {
+        // Если item не передан, ищем в equipment
+        item = equipment.find(e => e.id == equipmentId);
+        if (!item) return;
+    }
+    
+    const eq = item.gate || item.platform;
     if (!eq) return;
 
     document.getElementById('equipment-id').value = eq.id;
-    document.getElementById('modal-title').textContent = `Осмотр №${eq.id} - ${eq.location}`;
+    document.getElementById('modal-title').textContent = `Осмотр №${eq.id} - ${item.location}`;
     document.getElementById('form-result').className = '';
     document.getElementById('form-result').style.display = 'none';
 
@@ -354,14 +421,20 @@ window.openModal = function(equipmentId) {
     // По умолчанию выбираем Ворота и Платформу (если есть)
     const gateCheckbox = document.getElementById('inspect-gate');
     const platformCheckbox = document.getElementById('inspect-platform');
-    if (gateCheckbox) gateCheckbox.checked = true;
-    if (platformCheckbox) platformCheckbox.checked = true;
+    if (gateCheckbox) {
+        gateCheckbox.checked = !!item.gate;
+        gateCheckbox.parentElement.style.display = item.gate ? 'block' : 'none';
+    }
+    if (platformCheckbox) {
+        platformCheckbox.checked = !!item.platform;
+        platformCheckbox.parentElement.style.display = item.platform ? 'block' : 'none';
+    }
 
     // Показываем/скрываем секции (если существуют)
     const gateSection = document.getElementById('gateSection');
     const platformSection = document.getElementById('platformSection');
-    if (gateSection) gateSection.style.display = 'block';
-    if (platformSection) platformSection.style.display = 'block';
+    if (gateSection) gateSection.style.display = item.gate ? 'block' : 'none';
+    if (platformSection) platformSection.style.display = item.platform ? 'block' : 'none';
 
     document.getElementById('modal').classList.add('active');
 }
