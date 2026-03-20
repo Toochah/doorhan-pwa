@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Осмотр оборудования Doorhan</title>
-    <link rel="stylesheet" href="static/style.css?v=1">
+    <link rel="stylesheet" href="static/style.css?v=8">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3c72">
 </head>
@@ -50,8 +50,8 @@
             </div>
         </div>
 
-        <!-- Оборудование -->
-        <div id="equipment-list" class="equipment-list"></div>
+        <!-- Оборудование сгруппировано по локациям -->
+        <div id="equipment-container"></div>
     </main>
 
     <!-- Модальное окно -->
@@ -73,10 +73,10 @@
                     <label>Оборудование:</label>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="inspect-gate"> Ворота
+                            <input type="checkbox" id="inspect-gate"> 🚪 Ворота
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" id="inspect-platform"> Платформа
+                            <input type="checkbox" id="inspect-platform"> ⚙️ Платформа
                         </label>
                     </div>
                 </div>
@@ -112,6 +112,6 @@
         </div>
     </div>
 
-    <script src="js/app.js?v=1"></script>
+    <script src="js/app.js?v=8"></script>
 </body>
 </html>

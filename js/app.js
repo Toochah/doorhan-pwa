@@ -166,35 +166,102 @@ function loadLocalData() {
 
 // Рендер оборудования
 function renderEquipment(filter = 'all') {
-    const container = document.getElementById('equipment-list');
+    const container = document.getElementById('equipment-container');
     container.innerHTML = '';
-    
+
     let filtered = equipment;
     if (filter !== 'all') {
         filtered = equipment.filter(eq => eq.location && eq.location.includes(filter));
     }
-    
+
     document.getElementById('total-count').textContent = filtered.length;
-    
+
+    // Группировка по локациям
+    const grouped = {};
     filtered.forEach(eq => {
-        const inspection = inspections[eq.id];
-        const statusIcon = getStatusIcon(inspection?.status);
-        
-        const item = document.createElement('div');
-        item.className = 'equipment-item';
-        item.innerHTML = `
-            <div class="equipment-info">
-                <h3>№${eq.id} - ${eq.location}</h3>
-                <p>${eq.type} | ${eq.serial}</p>
-                ${inspection ? `<p style="font-size:12px;color:#888;">Последний осмотр: ${inspection.last_date} (${inspection.inspector})</p>` : ''}
-            </div>
-            <div style="display:flex;align-items:center;gap:15px;">
-                <span class="equipment-status">${statusIcon}</span>
-                <button class="btn-inspect" onclick="openModal('${eq.id}')">✏️ Осмотр</button>
-            </div>
-        `;
-        container.appendChild(item);
+        const loc = eq.location || 'Другое';
+        if (!grouped[loc]) grouped[loc] = [];
+        grouped[loc].push(eq);
     });
+
+    // Рендер по локациям
+    Object.keys(grouped).sort().forEach(location => {
+        const items = grouped[location];
+        
+        const section = document.createElement('section');
+        section.className = 'location-block';
+        section.dataset.location = location;
+        
+        // Заголовок локации
+        const title = document.createElement('h2');
+        title.className = 'location-title';
+        title.onclick = () => toggleSection(title);
+        title.innerHTML = `
+            📍 ${location}
+            <span class="count">${items.length} ед.</span>
+            <span class="arrow">▼</span>
+        `;
+        section.appendChild(title);
+        
+        // Список оборудования
+        const list = document.createElement('div');
+        list.className = 'equipment-list';
+        
+        items.forEach(eq => {
+            const inspection = inspections[eq.id];
+            const statusClass = inspection?.status || 'none';
+            const statusText = {
+                'ok': 'Исправно',
+                'warning': 'Требует внимания', 
+                'critical': 'Неисправно'
+            }[statusClass] || 'Не осмотрено';
+            
+            const card = document.createElement('div');
+            card.className = 'equipment-card';
+            card.dataset.id = eq.id;
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="eq-number">№${eq.id}</span>
+                    <span class="eq-status status-${statusClass}">${statusText}</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="label">Тип:</span>
+                        <span class="value">${eq.type || '-'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Серийный №:</span>
+                        <span class="value">${eq.serial || '-'}</span>
+                    </div>
+                    ${inspection ? `
+                    <div class="info-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                        <span class="label" style="color: #666;">Последний осмотр:</span>
+                        <span class="value" style="color: #666;">${inspection.last_date} (${inspection.inspector})</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <button class="btn-inspect" onclick="openModal('${eq.id}')">✏️ Пройти осмотр</button>
+            `;
+            list.appendChild(card);
+        });
+        
+        section.appendChild(list);
+        container.appendChild(section);
+    });
+}
+
+// Переключение секции
+window.toggleSection = function(title) {
+    const list = title.nextElementSibling;
+    const arrow = title.querySelector('.arrow');
+    if (list.style.display === 'none') {
+        list.style.display = 'grid';
+        arrow.textContent = '▼';
+    } else {
+        list.style.display = 'none';
+        arrow.textContent = '▶';
+    }
 }
 
 // Иконка статуса

@@ -1,0 +1,19 @@
+{
+  "spreadsheet_id": "1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4",
+  "sheets": {
+    "equipment": "Оборудование",
+    "inspections": "Осмотры"
+  },
+  "inspectors": [
+    {
+      "id": 1,
+      "name": "Косогоров Сергей Леонидович",
+      "position": "Слесарь ремонтник"
+    },
+    {
+      "id": 2,
+      "name": "Барыкин Александр Геннадьевич",
+      "position": "Слесарь ремонтник"
+    }
+  ]
+}
