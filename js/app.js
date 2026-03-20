@@ -63,10 +63,12 @@ async function loadGoogleConfig() {
 // Загрузка оборудования из Google Sheets
 async function loadEquipment() {
     try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Оборудование?key=${API_KEY}`;
+        const sheetName = 'Оборудование';
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
+        console.log('Loading from:', url);
         const response = await fetch(url);
         const data = await response.json();
-        
+
         if (data.values) {
             parseEquipment(data.values);
             renderEquipment();
@@ -105,15 +107,22 @@ function parseEquipment(rows) {
 // Загрузка осмотров
 async function loadInspections() {
     try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Осмотры?key=${API_KEY}`;
+        const sheetName = 'Осмотры';
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
+        console.log('Loading from:', url);
         const response = await fetch(url);
         const data = await response.json();
-        
+
         if (data.values) {
             parseInspections(data.values);
+        } else if (data.error) {
+            console.warn('Осмотры:', data.error.message);
+            // Лист может не существовать - это нормально
+            inspections = {};
         }
     } catch (error) {
         console.error('Ошибка загрузки осмотров:', error);
+        inspections = {};
     }
 }
 
