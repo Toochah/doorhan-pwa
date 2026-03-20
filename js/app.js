@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v10 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v11 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -190,6 +190,14 @@ function renderEquipment(filter = 'all') {
     const totalCount = filtered.length;
     document.getElementById('total-count').textContent = totalCount;
     console.log(`Рендер: ${totalCount} записей (фильтр: ${filter})`);
+    
+    // Детальная статистика по локациям
+    const locationStats = {};
+    filtered.forEach(eq => {
+        const loc = eq.location || 'Другое';
+        locationStats[loc] = (locationStats[loc] || 0) + 1;
+    });
+    console.log('Статистика по локациям:', locationStats);
 
     // Группировка по локациям
     const grouped = {};
@@ -324,12 +332,12 @@ function setupModal() {
 window.openModal = function(equipmentId) {
     const eq = equipment.find(e => e.id == equipmentId);
     if (!eq) return;
-    
+
     document.getElementById('equipment-id').value = eq.id;
     document.getElementById('modal-title').textContent = `Осмотр №${eq.id} - ${eq.location}`;
     document.getElementById('form-result').className = '';
     document.getElementById('form-result').style.display = 'none';
-    
+
     // Сброс формы
     document.getElementById('inspection-form').reset();
     document.querySelectorAll('.status-btn').forEach(btn => {
@@ -337,9 +345,15 @@ window.openModal = function(equipmentId) {
     });
     document.getElementById('gate-status').value = '';
     document.getElementById('platform-status').value = '';
-    document.getElementById('inspect-gate').checked = false;
-    document.getElementById('inspect-platform').checked = false;
     
+    // По умолчанию выбираем Ворота и Платформу (если есть)
+    document.getElementById('inspect-gate').checked = true;
+    document.getElementById('inspect-platform').checked = true;
+    
+    // Показываем/скрываем секции
+    document.getElementById('gateSection').style.display = 'block';
+    document.getElementById('platformSection').style.display = 'block';
+
     document.getElementById('modal').classList.add('active');
 }
 
@@ -374,7 +388,16 @@ async function submitInspection() {
     const gateStatus = document.getElementById('gate-status').value;
     const platformStatus = document.getElementById('platform-status').value;
 
-    console.log('Отправка осмотра:', { eqId, inspector, inspectGate, inspectPlatform, gateStatus, platformStatus });
+    console.log('Отправка осмотра:', { 
+        eqId, 
+        inspector, 
+        inspectGate, 
+        inspectPlatform, 
+        gateStatus, 
+        platformStatus,
+        gateStatusSelected: document.querySelector('#gateSection .status-btn.selected')?.textContent,
+        platformStatusSelected: document.querySelector('#platformSection .status-btn.selected')?.textContent
+    });
 
     if (!inspector) {
         showResult('Выберите инспектора', 'error');
@@ -386,13 +409,17 @@ async function submitInspection() {
         return;
     }
 
+    // Проверка статуса для ворот
     if (inspectGate && !gateStatus) {
-        showResult('Выберите статус ворот', 'error');
+        console.error('Ворота: статус не выбран!');
+        showResult('Выберите статус ворот (нажмите на кнопку ✅, ⚠️ или ❌)', 'error');
         return;
     }
 
+    // Проверка статуса для платформы
     if (inspectPlatform && !platformStatus) {
-        showResult('Выберите статус платформы', 'error');
+        console.error('Платформа: статус не выбран!');
+        showResult('Выберите статус платформы (нажмите на кнопку ✅, ⚠️ или ❌)', 'error');
         return;
     }
 
