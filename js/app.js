@@ -1,5 +1,5 @@
 // Конфигурация
-const BUILD_VERSION = 'v17 - ' + new Date().toISOString();
+const BUILD_VERSION = 'v18 - ' + new Date().toISOString();
 console.log('PWA Version:', BUILD_VERSION);
 
 const SPREADSHEET_ID = '1xXhOoYUk45im6hCksWXtzFNjk0RA82OuzghMcuUDXj4';
@@ -496,15 +496,13 @@ async function submitInspection() {
     const gateStatus = document.getElementById('gate-status').value;
     const platformStatus = document.getElementById('platform-status').value;
 
-    console.log('Отправка осмотра:', { 
-        eqId, 
-        inspector, 
-        inspectGate, 
-        inspectPlatform, 
-        gateStatus, 
-        platformStatus,
-        gateStatusSelected: document.querySelector('#gateSection .status-btn.selected')?.textContent,
-        platformStatusSelected: document.querySelector('#platformSection .status-btn.selected')?.textContent
+    console.log('Отправка осмотра:', {
+        eqId,
+        inspector,
+        inspectGate,
+        inspectPlatform,
+        gateStatus,
+        platformStatus
     });
 
     if (!inspector) {
@@ -548,10 +546,21 @@ async function submitInspection() {
         status: mainStatus
     };
 
+    // Блокируем кнопку и показываем загрузку
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Сохранение...';
+
     try {
         // Отправляем в Google Sheets через Apps Script
         console.log('Отправка в Google Sheets:', inspectionData);
-        await sendToGoogleSheets(inspectionData);
+        
+        // Отправляем без ожидания ответа (no-cors)
+        sendToGoogleSheets(inspectionData);
+        
+        // Ждём немного для отправки
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Обновляем локальные данные
         inspections[eqId] = {
@@ -568,16 +577,20 @@ async function submitInspection() {
         renderEquipment(activeFilter);
         updateStats(activeFilter);
 
-        // Закрываем модалку через 2 секунды
+        // Закрываем модалку через 1.5 секунды
         setTimeout(() => {
             document.getElementById('modal').classList.remove('active');
             document.getElementById('inspection-form').reset();
             document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('selected'));
-        }, 2000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }, 1500);
 
     } catch (error) {
         console.error('Ошибка отправки:', error);
         showResult('Ошибка при сохранении: ' + error.message, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 }
 
